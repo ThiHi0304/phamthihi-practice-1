@@ -1,18 +1,18 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Tên API",
-        "description": "Mô tả API",
+        "title": "API Documentation",
+        "description": "Documentation for the API",
         "version": "1.0.0"
     },
     "paths": {
-        "/api/users": {
+        "/api/posts": {
             "get": {
                 "tags": [
-                    "Users"
+                    "Posts"
                 ],
-                "summary": "Get all users",
-                "operationId": "c457726701591d1183b53aa71fc13441",
+                "summary": "Get all posts",
+                "operationId": "8c292c8777126dc6d3efb05793ca8517",
                 "responses": {
                     "200": {
                         "description": "Success"
@@ -26,33 +26,24 @@
             },
             "post": {
                 "tags": [
-                    "Users"
+                    "Posts"
                 ],
-                "summary": "Create a new user",
-                "operationId": "592819a0265360b2014512d6dbfaf0e7",
+                "summary": "Create a new post",
+                "operationId": "4a657e51a0066c64781851f2fd2651e2",
                 "parameters": [
                     {
-                        "name": "name",
+                        "name": "title",
                         "in": "query",
-                        "description": "The name of the user",
+                        "description": "The title of the post",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     },
                     {
-                        "name": "email",
+                        "name": "description",
                         "in": "query",
-                        "description": "The email of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "password",
-                        "in": "query",
-                        "description": "The password of the user",
+                        "description": "The description of the post",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -71,18 +62,18 @@
                 ]
             }
         },
-        "/api/users/{id}": {
+        "/api/posts/{id}": {
             "get": {
                 "tags": [
-                    "Users"
+                    "Posts"
                 ],
-                "summary": "Get a specific user",
-                "operationId": "36a33ff774d5cba33c039dec2c3e0287",
+                "summary": "Get a specific post",
+                "operationId": "b0f9d92879218f68a376b6edc6467c67",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "User ID",
+                        "description": "Post ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -102,39 +93,39 @@
             },
             "put": {
                 "tags": [
-                    "Users"
+                    "Posts"
                 ],
-                "summary": "Update a specific user",
-                "operationId": "b9091397c8b25f12c6adb74be6ce3a5a",
+                "summary": "Update a specific post",
+                "operationId": "929614537d76a081a92170a41ed3bdb3",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "User ID",
+                        "description": "Post ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "description": "The name of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "email",
-                        "in": "query",
-                        "description": "The email of the user",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Success"
@@ -148,15 +139,15 @@
             },
             "delete": {
                 "tags": [
-                    "Users"
+                    "Posts"
                 ],
-                "summary": "Delete a specific user",
-                "operationId": "fa56cffde745d3f152f95cbacd936c0b",
+                "summary": "Delete a specific post",
+                "operationId": "fad1726bd24cd459fc1525b67985df39",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "User ID",
+                        "description": "Post ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
