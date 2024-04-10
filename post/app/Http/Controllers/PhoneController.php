@@ -26,10 +26,12 @@ class PhoneController extends Controller
 
     public function show($id)
     {
-        $phone = Phone::findOrFail($id);
-        return response()->json($phone);
+        $phoneWithUser = Phone::with('user')->find($id);
+        if (!$phoneWithUser) {
+            return response()->json(['message' => 'Phone not found'], 404);
+        }
+        return response()->json($phoneWithUser, 200);
     }
-
     public function update(Request $request, $id)
     {
         $request->validate([

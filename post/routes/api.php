@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PhoneController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,9 @@ Route::get('/users/{id}', [UserController::class,'show']);
 Route::post('/users', [UserController::class,'store']);
 Route::delete('/users/{id}', [UserController::class,'destroy']);
 Route::put('/users/{id}', [UserController::class,'update']);
+
+Route::get('/phones', [PhoneController::class, 'index']);
+Route::get('/phones/{id}', [PhoneController::class, 'show']);
+Route::post('/phones', [PhoneController::class, 'store']);
+Route::delete('/phones/{id}', [PhoneController::class, 'destroy']);
+Route::put('/phones/{id}', [PhoneController::class, 'update']);

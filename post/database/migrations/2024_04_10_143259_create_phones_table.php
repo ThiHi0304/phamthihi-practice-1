@@ -15,10 +15,9 @@ return new class extends Migration
     {
         Schema::create('phones', function (Blueprint $table) {
             $table->id();
-            $table->string('number');
+            $table->string('number')->default('123456789');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
-            // Foreign key constraint to link to users table
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

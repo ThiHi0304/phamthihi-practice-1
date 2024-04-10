@@ -114,9 +114,16 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $getUser = DB::table('users')->where('id', $id)->get();
-        return $getUser;
+        $userWithPhone = Users::with('phones')->find($id);
+        if (!$userWithPhone) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        return response()->json($userWithPhone, 200);
     }
+    
+    
+    
     /**
      * @OA\Put(
      *     path="/api/users/{id}",
