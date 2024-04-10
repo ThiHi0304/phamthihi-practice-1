@@ -14,6 +14,11 @@ class Users extends Model
     protected $fillable = [
         'name', 'email', 'password',
     ];
+    public function phone()
+{
+    return $this->hasOne(Phone::class);
+}
+
     
     public function getAllUser(){
         $users=DB::table('users')->get();
