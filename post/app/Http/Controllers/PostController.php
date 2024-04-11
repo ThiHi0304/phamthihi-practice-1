@@ -35,50 +35,51 @@ class PostController extends Controller
         // dd($postList);
         return  $postList;
     }
-    /**
- * @OA\Post(
- *     path="/api/posts",
- *     summary="Create a new post",
- *     tags={"Posts"},
- *     @OA\Parameter(
- *         name="title",
- *         in="query",
- *         description="The title of the post",
- *         required=true,
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Parameter(
- *         name="description",
- *         in="query",
- *         description="The description of the post",
- *         required=true,
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Response(response="200", description="Success"),
- *     security={{"bearerAuth":{}}}
- * )
- */
-    public function store(Request $request){
-        $rules = [
-            'title' => 'required|unique:posts|min:5|max:100',
-            'description' => 'required|min:10|max:50'
-        ];
-        $messages = [
-            'title.required' => 'Tiêu đề là trường bắt buộc.',
-            'title.unique' => 'Tiêu đề đã tồn tại.',
-            'title.min' => 'Tiêu đề phải chứa ít nhất 5 ký tự.',
-            'title.max' => 'Tiêu đề không được vượt quá 100 ký tự.',
-            'description.required' => 'Mô tả là trường bắt buộc.',
-            'description.min' => 'Mô tả phải chứa ít nhất 10 ký tự.',
-            'description.max' => 'Mô tả không được vượt quá 50 ký tự.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $messages);
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:100|min:5',
+            'description' => 'required|max:50|min:10',
+        ], [
+            'title.required' => 'Title bắt buộc phải nhập',
+            'title.min' => 'Title phải từ :min ký tự trở lên',
+            'title.max' => 'Title phải từ :max ký tự trở lên',
+            'title.unique' => 'Title đã tồn tại trên hệ thống',
+            'description.required' => 'Description bắt buộc phải nhập',
+            'description.min' => 'Description phải từ :min ký tự trở lên',
+            'description.max' => 'Description phải từ :max ký tự trở lên',
+        ]);
+    
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            $errors = $validator->errors()->all();
+            return response()->json($errors, 412);
+        } else {
+            $user_id = auth()->user()->id ?? 1;
+    
+            $data = [
+                'title' => $request->title,
+                'description' => $request->description,
+                'user_id' => $user_id,
+            ];
+    
+            $post = Post::create($data);
+    
+            if ($post) {
+                $arr = [
+                    'status' => true,
+                    'message' => "Thành công",
+                    'data' => $post
+                ];
+                return response()->json($arr, 200);
+            } else {
+                $arr = [
+                    'status' => false,
+                    'message' => "Thất bại",
+                    'data' => $post
+                ];
+                return response()->json($arr, 400);
+            }
         }
-        $data = $request->all();
-        $addPost = DB::table('posts')->insert($data);
-        return $addPost;
     }
     /**
      * @OA\Get(
@@ -97,77 +98,94 @@ class PostController extends Controller
      * )
      */
     public function show($id){
-        $getPost=DB::table('posts')->where('id',$id)->get();
-        return $getPost;
-    }
-    /**
- * @OA\Put(
- *     path="/api/posts/{id}",
- *     summary="Update a specific post",
- *     tags={"Posts"},
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         description="Post ID",
- *         required=true,
- *         @OA\Schema(type="integer")
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 type="object",
- *                 @OA\Property(property="title", type="string"),
- *                 @OA\Property(property="content", type="string")
- *             )
- *         )
- *     ),
- *     @OA\Response(response="200", description="Success"),
- *     security={{"bearerAuth":{}}}
- * )
- */
-    public function update($id, Request $request) {
-        $rules = [
-            'title' => 'required|unique:posts|min:5|max:100',
-            'description' => 'required|min:10|max:50'
-        ];
-        $messages = [
-            'title.required' => 'Tiêu đề là trường bắt buộc.',
-            'title.unique' => 'Tiêu đề đã tồn tại.',
-            'title.min' => 'Tiêu đề phải chứa ít nhất 5 ký tự.',
-            'title.max' => 'Tiêu đề không được vượt quá 100 ký tự.',
-            'description.required' => 'Mô tả là trường bắt buộc.',
-            'description.min' => 'Mô tả phải chứa ít nhất 10 ký tự.',
-            'description.max' => 'Mô tả không được vượt quá 50 ký tự.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $messages);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+        $user = DB::table('users')->find($id);
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
         }
-        $data = $request->all();
-        $updatePost = DB::table('posts')->where('id', $id)->update($data);
-        return $updatePost;
+        $postCount = DB::table('posts')->where('user_id', $id)->count();
+        $posts = DB::table('posts')->where('user_id', $id)->get();
+        foreach ($posts as $post) {
+            $post->created_by = $user->name;
+        }
+        return response()->json([
+            'user_id' => $id,
+            'username' => $user->name,
+            'post_count' => $postCount,
+            'posts' => $posts
+        ]);
     }
     
-    /**
-     * @OA\Delete(
+    
+    
+   /**
+     * @OA\Put(
      *     path="/api/posts/{id}",
-     *     summary="Delete a specific post",
-     *     tags={"Posts"},
+     *     summary="Update a post",
+     *     tags = {"Update a post"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Post ID",
+     *         description="post's id",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response="200", description="Success"),
-     *     security={{"bearerAuth":{}}}
+     *     @OA\Parameter(
+     *         name="title",
+     *         in="query",
+     *         description="post's name",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="description",
+     *         in="query",
+     *         description="post's description",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response="201", description="Successfully"),
+     *     @OA\Response(response="400", description="Errors")
      * )
      */
-    public function destroy($id){
-        $destroyPost= DB::table('posts')->where('id', $id)->delete();
-        return $destroyPost;
+    public function update($id, Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:100|min:5',
+            'description' => 'required|max:50|min:10',
+        ], [
+            'title.required' => 'Title bắt buộc phải nhập',
+            'title.min' => 'Title phải từ :min ký tự trở lên',
+            'title.max' => 'Title phải từ :max ký tự trở lên',
+            'title.unique' => 'Title đã tồn tại trên hệ thống',
+            'description.required' => 'Description bắt buộc phải nhập',
+            'description.min' => 'Description phải từ :min ký tự trở lên',
+            'description.max' => 'Description phải từ :max ký tự trở lên',
+        ]);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            return response()->json($errors, 412);
+        } else {
+            $data = [
+                'title' => $request->title,
+                'description' => $request->description,
+            ];
+            $post = DB::table('posts')->where('id', $id)->update($data);
+            if ($post) {
+                $arr = [
+                    'status' => true,
+                    'message' => "Thành công",
+                    'data' => $post
+                ];
+            } else {
+                $arr = [
+                    'status' => false,
+                    'message' => "Thất bại",
+                    'data' => $post
+                ];
+            }
+            return response()->json($arr, 200);
+        }
     }
+
 }

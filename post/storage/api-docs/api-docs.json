@@ -102,24 +102,24 @@
             },
             "put": {
                 "tags": [
-                    "Users"
+                    "Update a user"
                 ],
-                "summary": "Update a specific user",
+                "summary": "Update a user",
                 "operationId": "b9091397c8b25f12c6adb74be6ce3a5a",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "User ID",
+                        "description": "user's id",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     },
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The name of the user",
+                        "description": "name",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -128,7 +128,16 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The email of the user",
+                        "description": "email",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "password",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -136,15 +145,13 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Success"
+                    "201": {
+                        "description": "Successfully"
+                    },
+                    "400": {
+                        "description": "Errors"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             },
             "delete": {
                 "tags": [

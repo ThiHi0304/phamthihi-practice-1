@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Models\Phone;
-
+use App\Models\Post;
 
 class Users extends Model
 {
@@ -18,6 +18,10 @@ class Users extends Model
     public function phones()
     {
         return $this->hasMany(Phone::class, 'user_id', 'id');
+    }
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
 
     public function getUserWithPhone($userId)

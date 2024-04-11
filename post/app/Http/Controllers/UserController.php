@@ -72,7 +72,7 @@ class UserController extends Controller
         $rules = [
             'name' => 'string|required|min:3|max:15',
             'email' => 'string|required|unique:users|email',
-            'password' => 'string|required',
+            // 'password' => 'string|required',
         ];
         $messages = [
             'name.required' => 'Tên là trường bắt buộc.',
@@ -83,8 +83,8 @@ class UserController extends Controller
             'email.string' => 'Email phải nhập kiểu chuỗi.',
             'email.unique' => 'Email đã tồn tại',
             'email.email' => 'Email phải đúng định dạng',
-            'password.required' => 'Mật khẩu là trường bắt buộc.',
-            'password.string' => 'Mật khẩu phải nhập dưới dạng chuỗi.',
+            // 'password.required' => 'Mật khẩu là trường bắt buộc.',
+            // 'password.string' => 'Mật khẩu phải nhập dưới dạng chuỗi.',
         ];
         $validator = Validator::make($request->all(), $rules, $messages);
 
@@ -124,66 +124,106 @@ class UserController extends Controller
     
     
     
-    /**
+/**
      * @OA\Put(
      *     path="/api/users/{id}",
-     *     summary="Update a specific user",
-     *     tags={"Users"},
+     *     summary="Update a user",
+     *     tags = {"Update a user"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="User ID",
+     *         description="user's id",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
-     *         description="The name of the user",
+     *         description="name",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
      *         name="email",
      *         in="query",
-     *         description="The email of the user",
+     *         description="email",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response="200", description="Success"),
-     *     security={{"bearerAuth":{}}}
+     *     @OA\Parameter(
+     *         name="password",
+     *         in="query",
+     *         description="password",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response="201", description="Successfully"),
+     *     @OA\Response(response="400", description="Errors")
      * )
      */
     public function update($id, Request $request)
     {
-        $rules = [
-            'name' => 'String|required|min:3|max:15',
-            'email' => 'String|required|unique:users|email',
-            // 'password' => 'String|required|confirmed',
-            'password' => 'String|required',
-
-        ];
-        $messages = [
-            'name.required' => 'Tên là trường bắt buộc.',
-            'title.String' => 'Tên phải nhập kiểu chuỗi.',
-            'name.min' => 'Tên phải chứa ít nhất 3 ký tự.',
-            'name.max' => 'Tên không được vượt quá 15 ký tự.',
-            'email.String' => 'Email phải nhập kiểu chuỗi.',
-            'email.required' => 'Email là trường bắt buộc.',
-            'email.unique' => 'Email đã tồn tại',
-            'email.email' => 'Email phải đúng định dạng',
-            'password.string' => 'Mật khẩu phải nhập dưới dạng chuỗi.',
-            'password.required' => 'Mật khẩu là trường bắt buộc.',
-            // 'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
-        ];
-        $validator = Validator::make($request->all(), $rules, $messages);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|min:3|max:15',
+            'email' => 'required|string|email|unique:users,email',
+            'password' => 'required|string',
+        ], [
+            'name.required' => 'Họ và tên bắt buộc phải nhập',
+            'name.string' => 'Họ và tên bắt buộc là string',
+            'name.min' => 'Họ và tên phải từ :min ký tự trở lên',
+            'name.max' => 'Họ và tên phải nhỏ hơn :max ký tự',
+            'email.required' => 'Email bắt buộc phải nhập',
+            'email.email' => 'Email không đúng định dạng',
+            'email.unique' => 'Email đã tồn tại trên hệ thống',
+            'email.string' => 'Email bắt buộc là string',
+            'password.required' => 'Password bắt buộc phải nhập',
+            'password.string' => 'Password bắt buộc là string',
+        ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            $errors = $validator->errors()->all();
+            return response()->json($errors, 412);
+        } else {
+            $data = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => $request->password,
+            ];
+            $user = DB::table('users')->where('id', $id)->update($data);
+            if ($user) {
+                $arr = [
+                    'status' => true,
+                    'message' => "Thành công",
+                    'data' => $user
+                ];
+            } else {
+                $arr = [
+                    'status' => false,
+                    'message' => "Thất bại",
+                    'data' => $user
+                ];
+            }
+            return response()->json($arr, 200);
         }
-        $data = $request->all();
-        $updateUser = DB::table('users')->where('id', $id)->update($data);
-        return $updateUser;
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/users/{id}",
+     *     summary="Delete a user",
+     *     tags = {"Delete a user"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="user's id",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="400", description="Errors"),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
+    
 
     /**
      * @OA\Delete(
